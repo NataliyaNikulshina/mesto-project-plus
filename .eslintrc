@@ -43,6 +43,7 @@
           {
             "allow": ["_id"]
           }
-        ]
+        ],
+        "linebreak-style": "off"
     }  
 } 
