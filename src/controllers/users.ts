@@ -23,3 +23,17 @@ export const createUser = (req: Request, res: Response) => {
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
 };
+
+export const updateUserData = (req: Request, res: Response, data: any) => {
+  const userId = req.user?._id;
+  User.findByIdAndUpdate({ userId, data })
+    .then((user) => res.send({ data: user }))
+    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+};
+
+export const updateUserAvatar = (req: Request, res: Response, data: any) => {
+  const userId = req.user?._id;
+  User.findByIdAndUpdate({ userId, data })
+    .then((link) => res.send({ data: link }))
+    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+};
