@@ -1,10 +1,10 @@
-const ERROR_NOT_FOUND = 404;
+import { STATUS_NOT_FOUND } from "../constants/status-code";
 
 export default class NotFoundDataError extends Error {
   public statusCode: number;
 
   constructor(message: string) {
     super(message);
-    this.statusCode = ERROR_NOT_FOUND;
+    this.statusCode = STATUS_NOT_FOUND;
   }
 }

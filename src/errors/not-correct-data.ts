@@ -1,10 +1,10 @@
-const ERROR_DATA = 400;
+import { STATUS_ERROR_CODE } from "../constants/status-code";
 
 export default class NotCorrectDataError extends Error {
   public statusCode: number;
 
   constructor(message: string) {
     super(message);
-    this.statusCode = ERROR_DATA;
+    this.statusCode = STATUS_ERROR_CODE;
   }
 }

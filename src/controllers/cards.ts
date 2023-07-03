@@ -1,52 +1,82 @@
 import { Request, Response } from "express";
-import Card from "../models/user";
+import { ObjectId } from "mongoose";
+import Card from "../models/card";
+import { STATUS_OK, STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "../constants/status-code";
 
-export const getCards = (req: Request, res: Response) => {
-  Card.find({})
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+export const getCards = async (req: Request, res: Response) => {
+  try {
+    const cards = await Card.find();
+    res.send(cards);
+  } catch (err) {
+    console.log(err);
+    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+  }
 };
 
-export const createCard = (req: Request, res: Response) => {
+export const createCard = async (req: Request, res: Response) => {
   const { name, link } = req.body;
   console.log(req.user._id);
   const owner = req.user?._id;
-  return Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+  try {
+    const card = await Card.create({ name, link, owner });
+    res.status(STATUS_OK).send(card);
+  } catch (err: any) {
+    console.log(err);
+    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+  }
 };
 
 export const deleteCard = async (req: Request, res: Response) => {
   try {
     const { cardId } = req.params;
-    await Card.findByIdAndDelete(cardId);
-    const cards = await Card.find({});
-    res.send({ data: cards });
-  } catch (error) {
-    res.status(500).send({ message: "Произошла ошибка" });
+    const deletedCard = await Card.findByIdAndDelete(cardId);
+    if (!deletedCard) {
+      res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+    }
+    res.status(STATUS_OK).send(deletedCard);
+  } catch (err: any) {
+    console.log(err);
+    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
   }
 };
 
-export const likeCard = (req: Request, res: Response) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user?._id } },
-    { new: true },
-  )
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+export const likeCard = async (req: Request, res: Response) => {
+  const { cardId } = req.params;
+  const owner = req.user?._id;
+  try {
+    const upCard = await Card.findByIdAndUpdate(
+      cardId,
+      { $addToSet: { likes: owner } },
+      { new: true },
+    );
+    if (!upCard) {
+      res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+    }
+    res.status(STATUS_OK).send(upCard);
+  } catch (err: any) {
+    console.log(err);
+    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+  }
 };
 
-export const dislikeCard = (req: Request, res: Response) => {
-  const userId = req.user?._id;
-  if (!userId) {
+export const dislikeCard = async (req: Request, res: Response) => {
+  const { cardId } = req.params;
+  const owner = req.user?._id;
+  if (!owner) {
     return;
   }
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: userId } },
-    { new: true },
-  )
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+  try {
+    const upCard = await Card.findByIdAndUpdate(
+      cardId,
+      { $pull: { likes: owner as unknown as ObjectId } },
+      { new: true },
+    );
+    if (!upCard) {
+      res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+    }
+    res.status(STATUS_OK).send(upCard);
+  } catch (err: any) {
+    console.log(err);
+    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+  }
 };

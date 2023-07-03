@@ -1,5 +1,4 @@
 import { Router } from "express";
-// import User from '../models/user';
 import {
   getUsers,
   getUserById,
@@ -8,13 +7,12 @@ import {
   updateUserAvatar,
 } from "../controllers/users";
 
-// const User = require('../models/user');
-const router = Router();
+const userRouter = Router();
 
-router.get("/", getUsers);
-router.get("/:userId", getUserById);
-router.post("/users", createUser);
-router.patch("/users/me", updateUserData);
-router.patch("/users/me/avatar", updateUserAvatar);
+userRouter.get("/", getUsers);
+userRouter.get("/:userId", getUserById);
+userRouter.post("/users", createUser);
+userRouter.patch("/users/me", updateUserData);
+userRouter.patch("/users/me/avatar", updateUserAvatar);
 
-export default router;
+export default userRouter;

@@ -8,12 +8,12 @@ import {
 } from "../controllers/cards";
 
 // const User = require('../models/user');
-const router = Router();
+const cardsRouter = Router();
 
-router.get("/cards", getCards);
-router.post("/cards", createCard);
-router.delete("/cards/:cardId", deleteCard);
-router.put("/cards/:cardId/likes", likeCard);
-router.delete("/cards/:cardId/likes", dislikeCard);
+cardsRouter.get("/cards", getCards);
+cardsRouter.post("/cards", createCard);
+cardsRouter.delete("/cards/:cardId", deleteCard);
+cardsRouter.put("/cards/:cardId/likes", likeCard);
+cardsRouter.delete("/cards/:cardId/likes", dislikeCard);
 
-export default router;
+export default cardsRouter;
