@@ -7,9 +7,13 @@ import { STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "./constants/status-code";
 
 const { PORT = 3000 } = process.env;
 
+const {
+  MONGODB_URI = "mongodb://127.0.0.1:27017/mestodb",
+} = process.env;
+
 const app = express();
 
-mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
+mongoose.connect(MONGODB_URI);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
