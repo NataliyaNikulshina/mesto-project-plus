@@ -2,8 +2,10 @@ import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import userRouter from "./routes/users";
 import cardsRouter from "./routes/cards";
-// import auth from "./middlewares/auth";
+import { createUser, login } from "./controllers/users";
+import auth from "./middlewares/auth";
 import { STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "./constants/status-code";
+import { Error } from "./types/types";
 
 const { PORT = 3000 } = process.env;
 
@@ -17,13 +19,10 @@ mongoose.connect(MONGODB_URI);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "64a0ab5d3ec214c74c4a8a11",
-  };
+app.post("/signin", login);
+app.post("/signup", createUser);
 
-  next();
-});
+app.use(auth);
 
 app.use("/users", userRouter);
 app.use("/cards", cardsRouter);
@@ -31,11 +30,6 @@ app.use("/cards", cardsRouter);
 app.use((req: Request, res: Response) => {
   res.status(STATUS_NOT_FOUND).send({ message: "Страница не найдена" });
 });
-
-export type Error = {
-  statusCode: number;
-  message: string;
-};
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   const { statusCode = STATUS_SERVER_ERROR, message } = err;
