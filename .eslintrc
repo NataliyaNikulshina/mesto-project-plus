@@ -42,7 +42,7 @@
         "no-underscore-dangle": [
           "error",
           {
-            "allow": ["_id", "MONGODB_URI", "JWT_SECRET_KEY"]
+            "allow": ["_id", "MONGODB_URI", "JWT_SECRET_KEY", "STATUS_FORBIDDEN"]
           }
         ],
         "linebreak-style": "off"

@@ -1,6 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ObjectId } from "mongoose";
+import { CustomRequest } from "../types/types";
 import Card from "../models/card";
+import ForbiddenError from "../errors/forbidden";
 import { STATUS_OK, STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "../constants/status-code";
 
 export const getCards = async (req: Request, res: Response) => {
@@ -13,9 +15,9 @@ export const getCards = async (req: Request, res: Response) => {
   }
 };
 
-export const createCard = async (req: Request, res: Response) => {
+export const createCard = async (req: CustomRequest, res: Response) => {
   const { name, link } = req.body;
-  console.log(req.user._id);
+  console.log(req.user?._id);
   const owner = req.user?._id;
   try {
     const card = await Card.create({ name, link, owner });
@@ -26,12 +28,16 @@ export const createCard = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteCard = async (req: Request, res: Response) => {
+export const deleteCard = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const { cardId } = req.params;
+    const owner = req.user?._id;
     const deletedCard = await Card.findByIdAndDelete(cardId);
     if (!deletedCard) {
       res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+    }
+    if (deletedCard!.owner.toString() !== owner) {
+      next(new ForbiddenError("Удаление чужих карточек запрещено"));
     }
     res.status(STATUS_OK).send(deletedCard);
   } catch (err: any) {
@@ -40,7 +46,7 @@ export const deleteCard = async (req: Request, res: Response) => {
   }
 };
 
-export const likeCard = async (req: Request, res: Response) => {
+export const likeCard = async (req: CustomRequest, res: Response) => {
   const { cardId } = req.params;
   const owner = req.user?._id;
   try {
@@ -59,7 +65,7 @@ export const likeCard = async (req: Request, res: Response) => {
   }
 };
 
-export const dislikeCard = async (req: Request, res: Response) => {
+export const dislikeCard = async (req: CustomRequest, res: Response) => {
   const { cardId } = req.params;
   const owner = req.user?._id;
   if (!owner) {
