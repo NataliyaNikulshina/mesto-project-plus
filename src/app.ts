@@ -9,10 +9,9 @@ import errorsMiddleware from "./middlewares/errors";
 import { validationLogin, validationCreateUser } from "./middlewares/validator";
 import { requestLogger, errorLogger } from "./middlewares/logger";
 
-const { PORT = 3000 } = process.env;
-
 const {
   MONGODB_URI = "mongodb://127.0.0.1:27017/mestodb",
+  PORT = 3000,
 } = process.env;
 
 const app = express();
