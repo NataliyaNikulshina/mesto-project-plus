@@ -2,20 +2,24 @@ import { Request, Response, NextFunction } from "express";
 import { ObjectId } from "mongoose";
 import { CustomRequest } from "../types/types";
 import Card from "../models/card";
-import ForbiddenError from "../errors/forbidden";
-import { STATUS_OK, STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "../constants/status-code";
+import {
+  STATUS_OK,
+  STATUS_NOT_FOUND,
+  STATUS_FORBIDDEN,
+} from "../constants/status-code";
+import ErrorTemplate from "../errors/template-error";
 
-export const getCards = async (req: Request, res: Response) => {
+export const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cards = await Card.find();
-    res.send(cards);
+    res.status(STATUS_OK).send(cards);
   } catch (err) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
-export const createCard = async (req: CustomRequest, res: Response) => {
+export const createCard = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
   console.log(req.user?._id);
   const owner = req.user?._id;
@@ -24,7 +28,7 @@ export const createCard = async (req: CustomRequest, res: Response) => {
     res.status(STATUS_OK).send(card);
   } catch (err: any) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
@@ -34,19 +38,19 @@ export const deleteCard = async (req: CustomRequest, res: Response, next: NextFu
     const owner = req.user?._id;
     const deletedCard = await Card.findByIdAndDelete(cardId);
     if (!deletedCard) {
-      res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+      next(new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
     if (deletedCard!.owner.toString() !== owner) {
-      next(new ForbiddenError("Удаление чужих карточек запрещено"));
+      next(new ErrorTemplate("Удаление чужих карточек запрещено", STATUS_FORBIDDEN));
     }
     res.status(STATUS_OK).send(deletedCard);
   } catch (err: any) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
-export const likeCard = async (req: CustomRequest, res: Response) => {
+export const likeCard = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const owner = req.user?._id;
   try {
@@ -56,16 +60,16 @@ export const likeCard = async (req: CustomRequest, res: Response) => {
       { new: true },
     );
     if (!upCard) {
-      res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+      next(new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(upCard);
   } catch (err: any) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
-export const dislikeCard = async (req: CustomRequest, res: Response) => {
+export const dislikeCard = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const owner = req.user?._id;
   if (!owner) {
@@ -78,11 +82,11 @@ export const dislikeCard = async (req: CustomRequest, res: Response) => {
       { new: true },
     );
     if (!upCard) {
-      res.status(STATUS_NOT_FOUND).send({ message: "Карточка не найдена" });
+      next(new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(upCard);
   } catch (err: any) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };

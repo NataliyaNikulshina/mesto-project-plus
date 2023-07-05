@@ -2,38 +2,42 @@ import { Request, Response, NextFunction } from "express";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
-import { STATUS_OK, STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "../constants/status-code";
-import UnauthorizedError from "../errors/unauthorized";
+import {
+  STATUS_OK,
+  STATUS_NOT_FOUND,
+  STATUS_CONFLICT,
+  STATUS_UNAUTHORIZED,
+} from "../constants/status-code";
 import { JWT_SECRET_KEY } from "../constants/config";
 import { CustomRequest } from "../types/types";
-import NotFoundDataError from "../errors/not-found-data";
+import ErrorTemplate from "../errors/template-error";
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
     res.status(STATUS_OK).send(users);
   } catch (err) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params;
   try {
     const user = await User.findById(userId);
     if (!user) {
-      res.status(STATUS_NOT_FOUND).send({ message: "Пользователь не найден" });
+      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
       return;
     }
     res.status(STATUS_OK).send(user);
   } catch (err) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const {
     name,
     about,
@@ -43,6 +47,10 @@ export const createUser = async (req: Request, res: Response) => {
   } = req.body;
   try {
     const hashPassword = await bcryptjs.hash(password, 10);
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      next(new ErrorTemplate("Пользователь с таким email уже существует", STATUS_CONFLICT));
+    }
     const user = await User.create({
       name,
       about,
@@ -53,7 +61,7 @@ export const createUser = async (req: Request, res: Response) => {
     res.status(STATUS_OK).send(user);
   } catch (err) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
@@ -63,12 +71,12 @@ export const updateUserData = async (req: Request, res: Response, next: NextFunc
   try {
     const updatedUser = await User.findByIdAndUpdate(userId, data, { new: true });
     if (!updatedUser) {
-      next(new NotFoundDataError("Пользователь не найден"));
+      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(updatedUser);
   } catch (err) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
@@ -78,12 +86,12 @@ export const updateUserAvatar = async (req: Request, res: Response, next: NextFu
   try {
     const updatedAvatar = await User.findByIdAndUpdate(userId, avatar, { new: true });
     if (!updatedAvatar) {
-      next(new NotFoundDataError("Пользователь не найден"));
+      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(updatedAvatar);
   } catch (err) {
     console.log(err);
-    res.status(STATUS_SERVER_ERROR).send({ message: "Ошибка сервера" });
+    next(err);
   }
 };
 
@@ -92,18 +100,18 @@ export const login = async (req: CustomRequest, res: Response, next: NextFunctio
   try {
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      throw new UnauthorizedError("Неверная почта или пароль");
+      next(new ErrorTemplate("Неверная почта или пароль", STATUS_UNAUTHORIZED));
     }
-    const matched = bcryptjs.compare(password, user.password);
+    const matched = bcryptjs.compare(password, user!.password);
     if (!matched) {
-      throw new UnauthorizedError("Неверная почта или пароль");
+      next(new ErrorTemplate("Неверная почта или пароль", STATUS_UNAUTHORIZED));
     }
-    const token = jwt.sign({ _id: user._id }, JWT_SECRET_KEY, { expiresIn: "7d" });
+    const token = jwt.sign({ _id: user!._id }, JWT_SECRET_KEY, { expiresIn: "7d" });
     res.cookie("jwt", token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: true });
     res.status(STATUS_OK).send({
       token,
-      name: user.name,
-      email: user.email,
+      name: user!.name,
+      email: user!.email,
     });
   } catch (err: any) {
     next(err);
@@ -115,7 +123,7 @@ export const getCurrentUser = async (req: CustomRequest, res: Response, next: Ne
   try {
     const currentUser = await User.findById(userId);
     if (!currentUser) {
-      next(new NotFoundDataError("Пользователь не найден"));
+      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(currentUser);
   } catch (err: any) {
