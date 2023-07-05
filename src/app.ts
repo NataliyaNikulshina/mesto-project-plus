@@ -1,14 +1,17 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import mongoose from "mongoose";
+import { errors } from "celebrate";
 import userRouter from "./routes/users";
 import cardsRouter from "./routes/cards";
-// import auth from "./middlewares/auth";
-import { STATUS_NOT_FOUND, STATUS_SERVER_ERROR } from "./constants/status-code";
-
-const { PORT = 3000 } = process.env;
+import { createUser, login } from "./controllers/users";
+import auth from "./middlewares/auth";
+import errorsMiddleware from "./middlewares/errors";
+import { validationLogin, validationCreateUser } from "./middlewares/validator";
+import { requestLogger, errorLogger } from "./middlewares/logger";
 
 const {
   MONGODB_URI = "mongodb://127.0.0.1:27017/mestodb",
+  PORT = 3000,
 } = process.env;
 
 const app = express();
@@ -17,35 +20,20 @@ mongoose.connect(MONGODB_URI);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "64a0ab5d3ec214c74c4a8a11",
-  };
+app.use(requestLogger); // подключаем логер запросов
 
-  next();
-});
+app.post("/signin", validationLogin, login);
+app.post("/signup", validationCreateUser, createUser);
+
+app.use(auth);
 
 app.use("/users", userRouter);
 app.use("/cards", cardsRouter);
 
-app.use((req: Request, res: Response) => {
-  res.status(STATUS_NOT_FOUND).send({ message: "Страница не найдена" });
-});
+app.use(errorLogger); // подключаем логер ошибок
 
-export type Error = {
-  statusCode: number;
-  message: string;
-};
-
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  const { statusCode = STATUS_SERVER_ERROR, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === STATUS_SERVER_ERROR ? "На сервере произошла ошибка" : message,
-    });
-  next();
-});
+app.use(errors());
+app.use(errorsMiddleware);
 
 app.listen(PORT, () => {
 // Если всё работает, консоль покажет, какой порт приложение слушает

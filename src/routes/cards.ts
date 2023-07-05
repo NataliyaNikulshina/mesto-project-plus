@@ -6,14 +6,15 @@ import {
   likeCard,
   dislikeCard,
 } from "../controllers/cards";
+import { validationCardId } from "../middlewares/validator";
 
 // const User = require('../models/user');
 const cardsRouter = Router();
 
-cardsRouter.get("/cards", getCards);
-cardsRouter.post("/cards", createCard);
-cardsRouter.delete("/cards/:cardId", deleteCard);
-cardsRouter.put("/cards/:cardId/likes", likeCard);
-cardsRouter.delete("/cards/:cardId/likes", dislikeCard);
+cardsRouter.get("/", getCards);
+cardsRouter.post("/", createCard);
+cardsRouter.delete("/:cardId", validationCardId, deleteCard);
+cardsRouter.put("/:cardId/likes", validationCardId, likeCard);
+cardsRouter.delete("/:cardId/likes", validationCardId, dislikeCard);
 
 export default cardsRouter;
