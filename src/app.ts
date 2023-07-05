@@ -1,11 +1,12 @@
 import express from "express";
 import mongoose from "mongoose";
+import { errors } from "celebrate";
 import userRouter from "./routes/users";
 import cardsRouter from "./routes/cards";
 import { createUser, login } from "./controllers/users";
 import auth from "./middlewares/auth";
 import errorsMiddleware from "./middlewares/errors";
-import { errors } from "celebrate";
+import { validationLogin, validationCreateUser } from "./middlewares/validator";
 import { requestLogger, errorLogger } from "./middlewares/logger";
 
 const { PORT = 3000 } = process.env;
@@ -22,8 +23,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(requestLogger); // подключаем логер запросов
 
-app.post("/signin", login);
-app.post("/signup", createUser);
+app.post("/signin", validationLogin, login);
+app.post("/signup", validationCreateUser, createUser);
 
 app.use(auth);
 
