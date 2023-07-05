@@ -59,7 +59,10 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       hashPassword,
     });
     res.status(STATUS_OK).send(user);
-  } catch (err) {
+  } catch (err:any) {
+    if (err.code === 11000) {
+      next(new ErrorTemplate("Пользователь с таким email уже существует", STATUS_CONFLICT));
+    }
     console.log(err);
     next(err);
   }
