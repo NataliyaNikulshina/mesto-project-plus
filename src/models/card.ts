@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { urlRegExp } from "../constants/config";
 
 export interface ICard {
   name: string;
@@ -16,6 +17,10 @@ const cardSchema = new mongoose.Schema<ICard>({
   },
   link: {
     type: String,
+    validate: {
+      validator: (value: string) => urlRegExp.test(value),
+      message: "Некорректный формат ссылки",
+    },
     required: true,
   },
   owner: {

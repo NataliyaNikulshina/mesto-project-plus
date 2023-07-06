@@ -1,8 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import { errors } from "celebrate";
-import userRouter from "./routes/users";
-import cardsRouter from "./routes/cards";
+import router from "./routes/index";
 import { createUser, login } from "./controllers/users";
 import auth from "./middlewares/auth";
 import errorsMiddleware from "./middlewares/errors";
@@ -27,8 +26,7 @@ app.post("/signup", validationCreateUser, createUser);
 
 app.use(auth);
 
-app.use("/users", userRouter);
-app.use("/cards", cardsRouter);
+app.use("/", router);
 
 app.use(errorLogger); // подключаем логер ошибок
 

@@ -47,10 +47,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   } = req.body;
   try {
     const hashPassword = await bcryptjs.hash(password, 10);
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      next(new ErrorTemplate("Пользователь с таким email уже существует", STATUS_CONFLICT));
-    }
     const user = await User.create({
       name,
       about,
@@ -72,9 +68,11 @@ export const updateUserData = async (req: Request, res: Response, next: NextFunc
   const data = req.body;
   const { userId } = req.params;
   try {
-    const updatedUser = await User.findByIdAndUpdate(userId, data, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, data, {
+      new: true, runValidators: true,
+    });
     if (!updatedUser) {
-      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
+      throw (new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(updatedUser);
   } catch (err) {
@@ -87,9 +85,11 @@ export const updateUserAvatar = async (req: Request, res: Response, next: NextFu
   const { avatar } = req.body;
   const { userId } = req.params;
   try {
-    const updatedAvatar = await User.findByIdAndUpdate(userId, avatar, { new: true });
+    const updatedAvatar = await User.findByIdAndUpdate(userId, avatar, {
+      new: true, runValidators: true,
+    });
     if (!updatedAvatar) {
-      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
+      throw (new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(updatedAvatar);
   } catch (err) {
@@ -103,16 +103,15 @@ export const login = async (req: CustomRequest, res: Response, next: NextFunctio
   try {
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      next(new ErrorTemplate("Неверная почта или пароль", STATUS_UNAUTHORIZED));
+      throw (new ErrorTemplate("Неверная почта или пароль", STATUS_UNAUTHORIZED));
     }
     const matched = bcryptjs.compare(password, user!.password);
     if (!matched) {
-      next(new ErrorTemplate("Неверная почта или пароль", STATUS_UNAUTHORIZED));
+      throw (new ErrorTemplate("Неверная почта или пароль", STATUS_UNAUTHORIZED));
     }
     const token = jwt.sign({ _id: user!._id }, JWT_SECRET_KEY, { expiresIn: "7d" });
     res.cookie("jwt", token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: true });
     res.status(STATUS_OK).send({
-      token,
       name: user!.name,
       email: user!.email,
     });
@@ -126,7 +125,7 @@ export const getCurrentUser = async (req: CustomRequest, res: Response, next: Ne
   try {
     const currentUser = await User.findById(userId);
     if (!currentUser) {
-      next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
+      throw (new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(currentUser);
   } catch (err: any) {
