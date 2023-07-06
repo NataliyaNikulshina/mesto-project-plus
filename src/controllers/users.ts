@@ -112,7 +112,6 @@ export const login = async (req: CustomRequest, res: Response, next: NextFunctio
     const token = jwt.sign({ _id: user!._id }, JWT_SECRET_KEY, { expiresIn: "7d" });
     res.cookie("jwt", token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: true });
     res.status(STATUS_OK).send({
-      token,
       name: user!.name,
       email: user!.email,
     });
