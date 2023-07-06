@@ -58,9 +58,10 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   } catch (err:any) {
     if (err.code === 11000) {
       next(new ErrorTemplate("Пользователь с таким email уже существует", STATUS_CONFLICT));
+    } else {
+      console.log(err);
+      next(err);
     }
-    console.log(err);
-    next(err);
   }
 };
 

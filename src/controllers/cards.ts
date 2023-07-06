@@ -36,7 +36,7 @@ export const deleteCard = async (req: CustomRequest, res: Response, next: NextFu
   try {
     const { cardId } = req.params;
     const owner = req.user?._id;
-    const deletedCard = await Card.findByIdAndDelete(cardId);
+    const deletedCard = await Card.findById(cardId);
     if (!deletedCard) {
       throw (new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
