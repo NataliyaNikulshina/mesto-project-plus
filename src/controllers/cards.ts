@@ -14,20 +14,17 @@ export const getCards = async (req: Request, res: Response, next: NextFunction) 
     const cards = await Card.find();
     res.status(STATUS_OK).send(cards);
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
 
 export const createCard = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
-  console.log(req.user?._id);
   const owner = req.user?._id;
   try {
     const card = await Card.create({ name, link, owner });
     res.status(STATUS_OK).send(card);
   } catch (err: any) {
-    console.log(err);
     next(err);
   }
 };
@@ -45,7 +42,6 @@ export const deleteCard = async (req: CustomRequest, res: Response, next: NextFu
     }
     res.status(STATUS_OK).send(deletedCard);
   } catch (err: any) {
-    console.log(err);
     next(err);
   }
 };
@@ -64,7 +60,6 @@ export const likeCard = async (req: CustomRequest, res: Response, next: NextFunc
     }
     res.status(STATUS_OK).send(upCard);
   } catch (err: any) {
-    console.log(err);
     next(err);
   }
 };
@@ -86,7 +81,6 @@ export const dislikeCard = async (req: CustomRequest, res: Response, next: NextF
     }
     res.status(STATUS_OK).send(upCard);
   } catch (err: any) {
-    console.log(err);
     next(err);
   }
 };

@@ -17,7 +17,6 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
     const users = await User.find({});
     res.status(STATUS_OK).send(users);
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
@@ -32,7 +31,6 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     }
     res.status(STATUS_OK).send(user);
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
@@ -59,7 +57,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     if (err.code === 11000) {
       next(new ErrorTemplate("Пользователь с таким email уже существует", STATUS_CONFLICT));
     } else {
-      console.log(err);
       next(err);
     }
   }
@@ -77,7 +74,6 @@ export const updateUserData = async (req: Request, res: Response, next: NextFunc
     }
     res.status(STATUS_OK).send(updatedUser);
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
@@ -94,7 +90,6 @@ export const updateUserAvatar = async (req: Request, res: Response, next: NextFu
     }
     res.status(STATUS_OK).send(updatedAvatar);
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
