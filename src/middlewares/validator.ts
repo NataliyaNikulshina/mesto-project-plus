@@ -20,7 +20,7 @@ export const validationCreateUser = celebrate({
 
 export const validationUserId = celebrate({
   body: Joi.object().keys({
-    userId: Joi.string().required(),
+    userId: Joi.string().required().length(24).hex(),
   }),
 });
 
@@ -39,6 +39,6 @@ export const validationAvatar = celebrate({
 
 export const validationCardId = celebrate({
   body: Joi.object().keys({
-    cardId: Joi.string().required(),
+    cardId: Joi.string().required().length(24).hex(),
   }),
 });

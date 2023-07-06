@@ -9,6 +9,7 @@ export default (req: AuthRequest, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith("Bearer ")) {
     next(new ErrorTemplate("Необходимо авторизоваться", STATUS_UNAUTHORIZED));
+    return;
   }
   const token = authorization?.replace("Bearer ", "");
   let payload;

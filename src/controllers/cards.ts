@@ -38,10 +38,10 @@ export const deleteCard = async (req: CustomRequest, res: Response, next: NextFu
     const owner = req.user?._id;
     const deletedCard = await Card.findByIdAndDelete(cardId);
     if (!deletedCard) {
-      next(new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
+      throw (new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
     if (deletedCard!.owner.toString() !== owner) {
-      next(new ErrorTemplate("Удаление чужих карточек запрещено", STATUS_FORBIDDEN));
+      throw (new ErrorTemplate("Удаление чужих карточек запрещено", STATUS_FORBIDDEN));
     }
     res.status(STATUS_OK).send(deletedCard);
   } catch (err: any) {
@@ -60,7 +60,7 @@ export const likeCard = async (req: CustomRequest, res: Response, next: NextFunc
       { new: true },
     );
     if (!upCard) {
-      next(new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
+      throw (new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(upCard);
   } catch (err: any) {
@@ -82,7 +82,7 @@ export const dislikeCard = async (req: CustomRequest, res: Response, next: NextF
       { new: true },
     );
     if (!upCard) {
-      next(new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
+      throw (new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
     }
     res.status(STATUS_OK).send(upCard);
   } catch (err: any) {
