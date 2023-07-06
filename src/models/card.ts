@@ -14,6 +14,7 @@ const cardSchema = new mongoose.Schema<ICard>({
     type: String,
     minlength: 2,
     maxlength: 30,
+    required: true,
   },
   link: {
     type: String,
