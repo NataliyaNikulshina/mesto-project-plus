@@ -33,12 +33,13 @@ export const deleteCard = async (req: CustomRequest, res: Response, next: NextFu
   try {
     const { cardId } = req.params;
     const owner = req.user?._id;
-    const deletedCard = await Card.findById(cardId);
+    const myCard = await Card.findById(cardId);
+    if (myCard!.owner.toString() !== owner) {
+      throw (new ErrorTemplate("Удаление чужих карточек запрещено", STATUS_FORBIDDEN));
+    }
+    const deletedCard = await Card.findByIdAndRemove(cardId);
     if (!deletedCard) {
       throw (new ErrorTemplate("Карточка не найдена", STATUS_NOT_FOUND));
-    }
-    if (deletedCard!.owner.toString() !== owner) {
-      throw (new ErrorTemplate("Удаление чужих карточек запрещено", STATUS_FORBIDDEN));
     }
     res.status(STATUS_OK).send(deletedCard);
   } catch (err: any) {
