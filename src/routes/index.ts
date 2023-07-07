@@ -12,7 +12,7 @@ router.use("/users", userRouter);
 router.use("/cards", cardsRouter);
 
 router.use((req:Request, res:Response, next:NextFunction) => {
-  next(new ErrorTemplate("Пользователь не найден", STATUS_NOT_FOUND));
+  next(new ErrorTemplate("Страница не найдена", STATUS_NOT_FOUND));
 });
 
 export default router;
